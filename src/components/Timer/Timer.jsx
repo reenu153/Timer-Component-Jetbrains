@@ -1,7 +1,23 @@
 import { Box } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 
-const Timer = ({ title, elapsedTime, timeRemaining, progressPercentage, error }) => {
+/**
+ * TimerComponent
+ * 
+ * Props:
+ * - `title: string` (required) - The title of the timer.
+ * - `timeRemaining: Object {minutes, seconds}` (required) - The remaining time in seconds. Default to 59:59 if not provided
+ * - `elapsedTime: Object {minutes, seconds}` (required) - The initial elapsed time in seconds. Defaults to 0 if not provided.
+ * - `progressPercentage: int` (required) - The progress percentage of elapsed time out of the 1 hour provided by the timer,
+ * - `timeEnded: boolean` (required) - Denotes whether timer has ended or 59 minutes and 59 seconds have elapsed or not
+ * 
+ * Description:
+ * - The component shows a countdown from the initial value of 'timeRemaining' to 00:00, and it displays the remaining time in MM:SS format.
+ * - It includes Start, Pause, and Reset buttons to control the timer.
+ * - When the timer ends, the background alternates between green and red with a smooth animation.
+ */
+
+const Timer = ({ title, elapsedTime, timeRemaining, progressPercentage, timeEnded=false }) => {
     const formatTime = (minutes, seconds) => {
         const formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
         const formattedSeconds = seconds < 10 ? "0" + seconds : seconds;
@@ -19,7 +35,7 @@ const Timer = ({ title, elapsedTime, timeRemaining, progressPercentage, error })
                 >
                     <CircularProgress sx={{ boxShadow: 'inset 0 0 0 7.5px #545576', borderRadius: '50%', color: '#67cb88' }} thickness={1.5} size={250} variant="determinate" value={progressPercentage || 0} />
 
-                    {true && (
+                    {timeEnded && (
                         <Box
                             sx={{
                                 position: 'absolute',

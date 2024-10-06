@@ -3,7 +3,8 @@ import Button from './components/button/Button'
 import Timer from './components/Timer/Timer'
 
 const App = () => {
-  const Ref = useRef(null)
+
+  const intervalRef = useRef(null)
   const isPausedRef = useRef(null)
   const [title, setTitle] = useState('Stop Watch')
   const [elapsedTime, setElapsedTime] = useState({ minutes: 0, seconds: 0 })
@@ -13,7 +14,7 @@ const App = () => {
     seconds: 59,
   })
   const [isPaused, setPaused] = useState(false)
-  const [error, setError] = useState('')
+  const [timeEnded, settimeEnded] = useState(false)
 
   const totalTime = 59 * 60 + 59;
 
@@ -22,14 +23,15 @@ const App = () => {
     const progressPercentage = (remainingTimeInSeconds / totalTime) * 100;
     return progressPercentage.toFixed(2);
   };
+
   const getTimeRemaining = (e) => {
     const total = Date.parse(e) - Date.parse(new Date())
     const seconds = Math.floor((total / 1000) % 60)
     const minutes = Math.floor((total / 1000 / 60) % 60)
     const hours = Math.floor((total / 1000 / 60 / 60) % 24)
     if (hours) {
-      setError("Invalid time: The timer only supports up to 59 minutes and 59 seconds. Please start timer again");
-      if (Ref.current) clearInterval(Ref.current)
+      settimeEnded(true);
+      if (intervalRef.current) clearInterval(intervalRef.current)
     }
     return {
       total,
@@ -49,10 +51,7 @@ const App = () => {
     }
   };
 
-  useEffect(() => {
-    isPausedRef.current = isPaused
-  }, [isPaused])
-
+  
   const runTimer = (e) => {
     let { total, minutes, seconds } = getTimeRemaining(e)
     if (total >= 0) {
@@ -63,43 +62,48 @@ const App = () => {
       setProgressPercentage(progress)
     }
   }
-
+  
   const startTimer = (e) => {
-    if (Ref.current) clearInterval(Ref.current)
-    const id = setInterval(() => {
-      if (!isPausedRef.current)
-        runTimer(e)
-    }, 1000)
-    Ref.current = id
-  }
+    if (intervalRef.current) clearInterval(intervalRef.current)
+      const id = setInterval(() => {
+    if (!isPausedRef.current)
+      runTimer(e)
+  }, 1000)
+  intervalRef.current = id
+}
 
-  const pauseTimer = () => {
-    if (!isPaused) {
-      setPaused(true)
-      if (Ref.current) { clearInterval(Ref.current); Ref.current = null }
-    } else {
-      setPaused(false)
-      startTimer(getDeadlineTime());
-    }
+const pauseTimer = () => {
+  if (!isPaused) {
+    setPaused(true)
+    if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
+  } else {
+    setPaused(false)
+    startTimer(getDeadlineTime());
   }
+}
 
-  const getDeadlineTime = () => {
-    let deadline = new Date();
-    deadline.setMinutes(deadline.getMinutes() + timeRemaining.minutes)
-    deadline.setSeconds(deadline.getSeconds() + timeRemaining.seconds)
-    return deadline
-  }
+const getDeadlineTime = () => {
+  let deadline = new Date();
+  deadline.setMinutes(deadline.getMinutes() + timeRemaining.minutes)
+  deadline.setSeconds(deadline.getSeconds() + timeRemaining.seconds)
+  return deadline
+}
+
+useEffect(() => {
+  isPausedRef.current = isPaused
+}, [isPaused])
 
   return (
     <div className="w-screen h-screen bg-[#000000] p-[24px] flex items-center justify-center">
-      {!error ? (<div className="w-[400px] h-[400px] bg-[#26273d] rounded-[25px] flex flex-col justify-center items-center">
+     <div className="w-[400px] h-[400px] bg-[#26273d] rounded-[25px] flex flex-col justify-center items-center">
         <Timer
           title={title}
           timeRemaining={timeRemaining}
           elapsedTime={elapsedTime}
           progressPercentage={progressPercentage}
+          timeEnded={timeEnded}
         />
-        <div className="flex items-center gap-[15px] mt-[20px]">
+       {!timeEnded?( <div className="flex items-center gap-[15px] mt-[20px]">
           <Button
             buttonTitle="Start"
             handleClick={() => {
@@ -108,32 +112,45 @@ const App = () => {
           />
           <Button
             buttonTitle={isPaused ? 'Resume' : 'Pause'}
+            isDisabled={!elapsedTime?.minutes && !elapsedTime?.seconds}
             handleClick={() => {
               pauseTimer()
             }}
           />
           <Button
             buttonTitle="Reset"
+            isDisabled={!elapsedTime?.minutes && !elapsedTime?.seconds}
             handleClick={() => {
-              if (Ref.current) { clearInterval(Ref.current) }
+              if (intervalRef.current) { clearInterval(intervalRef.current) }
               setTimeRemaining({ minutes: 59, seconds: 59 })
               setElapsedTime({ minutes: 0, seconds: 0 })
             }}
           />
-        </div>
-      </div>) : (
-        <div className='text-[#FFFFFF] text-[20px] flex flex-col items-center  gap-[20px] px-[40px] text-center'>
-          {error}
+        </div>):  <div className=' flex items-center justify-center mt-[20px]'>
+          {timeEnded}
           <Button
             buttonTitle="Restart"
             handleClick={() => {
-              setError('');
+              settimeEnded(false);
+              setTimeRemaining({ minutes: 59, seconds: 59 })
+              setElapsedTime({ minutes: 0, seconds: 0 })
+            }}
+          />
+        </div>}
+      </div>
+      {/* : (
+        <div className='text-[#FFFFFF] text-[20px] flex flex-col items-center  gap-[20px] px-[40px] text-center'>
+          {timeEnded}
+          <Button
+            buttonTitle="Restart"
+            handleClick={() => {
+              settimeEnded('');
               setTimeRemaining({ minutes: 59, seconds: 59 })
               setElapsedTime({ minutes: 0, seconds: 0 })
             }}
           />
         </div>
-      )}
+      ) */}
     </div>
   )
 }
