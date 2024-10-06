@@ -1,0 +1,29 @@
+body {
+    margin: 0;
+    font-family: 'Open Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+    font-family: 'Open Sans', sans-serif, monospace;
+}
+
+@import 'tailwindcss/base';
+
+@import 'tailwindcss/components';
+
+@import 'tailwindcss/utilities';
+
+
+@keyframes colorChange {
+  0% {
+    background-color: green;
+  }
+  50% {
+    background-color: red;
+  }
+  100% {
+    background-color: green;
+  }
+}
